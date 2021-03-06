@@ -1,89 +1,176 @@
-/*
-    Notations: We can write mathematical expressions in three way.
-    The most obvious and intuitive for us is what's called infix, in which the operator is "in"between the operands.
-    Then we have postfix in which the operator comes after (or post) the operands.
-    Finally, we have prefix notation where the operator comes before (or pre) the operands.
 
-    Infix: 2 + 3 * 4
-    Post Fix: 2 3 4 * +
-    Pre Fix: + 2 * 3 4
-*/
-
-let arr = ["2","+","3","*","4"];
-const operators = ["+","-","*","/"];
+// Order is according to PEDMAS.
+const operators = ["^","/","*","+","-"];
+const parentheses = ["(", ")"];
 
 /**
- * Converts an infix array into its postfix equivalent.
- * @param {Array<string>} anArr 
+ * Infix to postfix converter implemented using Dijkstra's
+ * shunting-yard algorithm.
+ * @param {Array<string>} anArr The infix input
  */
 function infixToPostfix(anArr)
 {
     let stack = new Array();
-    console.log("Creating Stack:");
-    console.log(stack);
+    let output = new Array();
+    let shiftedValue;
 
-    // Push numbers until you reach an operator.
-    while (anArr.length > 0 && !operators.includes(anArr[0]) )
+    while (anArr.length > 0)
     {
-        stack.push(anArr.shift());
-        console.log("In While Loop:");
-        console.log(stack);
+        shiftedValue = anArr.shift();
+
+        // Add to output if value is a number or variable.
+        if (! operators.includes(shiftedValue) && ! parentheses.includes(shiftedValue))
+        {
+            output.push(shiftedValue);
+        }
+        // Handle case if it is an operator.
+        else if (operators.includes(shiftedValue))
+        {
+            // Pop operator stack.
+            while(stack.length > 0 && !isTopLeftParenthesis(stack) && !hasPriority(shiftedValue, stack))
+            {
+                output.push(stack.pop());
+            }
+
+            // Push operator to the stack.
+            stack.push(shiftedValue);
+        }
+        // Add left parenthesis.
+        else if (shiftedValue == "(")
+        {
+            stack.push(shiftedValue);
+        }
+        // Add right parenthesis.
+        else if (shiftedValue == ")")
+        {
+            // Add all values to stack until reaching opening parenthesis.
+            while (stack.length > 0 && !isTopLeftParenthesis(stack))
+            {
+                output.push(stack.pop());
+            }
+
+            // Discard opening parenthesis.
+            stack.pop();
+        }
     }
-    
-    if (anArr.length == 0)
-        return stack;
-    
-    // Grab operator.
-    let op = anArr.shift();
 
-    // Recursively call remainder of array an add it to the end of the stack.
-    stack = stack.concat(infixToPostfix(anArr));
-    console.log("After Recursion:");
-    console.log(stack);
+    // Pop remaining operators.
+    while (stack.length > 0)
+    {
+        output.push(stack.pop());
+    }
 
-    // Add the operator at the end.
-    stack.push(op);
-    console.log("Adding Operator:");
-    console.log(stack);
-
-    // Return results.
-    return stack;
+    return output;
 }
 
-/**
- * Converts an infix array into its postfix equivalent.
- * @param {Array<string>} anArr 
+/** Helper function to check stack top. Improves readability.
+ * @param {string[]} stack 
+ * @returns {boolean} True if the top of the stack is "(". False otherwise.
  */
+function isTopLeftParenthesis(stack)
+{
+    return stack[stack.length - 1] == "(";
+}
+
+/** Helper function to check stack top. Improves readability.
+ * @param {string[]} stack 
+ * @returns {boolean} True if the top of the stack is ")". False otherwise.
+ */
+ function isTopRightParenthesis(stack)
+ {
+     return stack[stack.length - 1] == ")";
+ }
+
+/** Helper function that checks for priority and improves readability.
+ * @param {string} value 
+ * @param {string[]} stack 
+ * @returns {boolean} True if the operator in value has precedence over the top value in stack.
+ */
+function hasPriority(value, stack)
+{
+    let valuePriority = operators.indexOf(value);
+    let topPriority = operators.indexOf(stack[stack.length-1]);
+    return valuePriority < topPriority
+}
+
 function infixToPrefix(anArr)
 {
     let stack = new Array();
-    console.log("Creating Stack:");
-    console.log(stack);
+    let output = new Array();
+    let shiftedValue;
 
-    // Push numbers until you reach an operator.
-    while (anArr.length > 0 && !operators.includes(anArr[0]) )
+    // Reversing array.
+    anArr = anArr.reverse();
+
+    while (anArr.length > 0)
     {
-        stack.push(anArr.shift());
-        console.log("In While Loop:");
-        console.log(stack);
+        shiftedValue = anArr.shift();
+
+        // Add to output if value is a number or variable.
+        if (! operators.includes(shiftedValue) && ! parentheses.includes(shiftedValue))
+        {
+            output.push(shiftedValue);
+        }
+        // Handle case if it is an operator.
+        else if (operators.includes(shiftedValue))
+        {
+            // Pop operator stack.
+            while(stack.length > 0 && !isTopRightParenthesis(stack) && !hasPriority(shiftedValue, stack))
+            {
+                output.push(stack.pop());
+            }
+
+            // Push operator to the stack.
+            stack.push(shiftedValue);
+        }
+        // Add left parenthesis.
+        else if (shiftedValue == ")")
+        {
+            stack.push(shiftedValue);
+        }
+        // Add right parenthesis.
+        else if (shiftedValue == "(")
+        {
+            // Add all values to stack until reaching closing parenthesis.
+            while (stack.length > 0 && !isTopRightParenthesis(stack))
+            {
+                output.push(stack.pop());
+            }
+
+            // Discard opening parenthesis.
+            stack.pop();
+        }
     }
-    
-    if (anArr.length == 0)
-        return stack;
-    
-    // Add operator to the beginning.
-    stack.unshift(anArr.shift());
-    console.log("Adding Operator:");
-    console.log(stack);
 
-    // Recursively call remainder of array an add it to the end of the stack.
-    stack = stack.concat(infixToPrefix(anArr));
-    console.log("After Recursion:");
-    console.log(stack);
+    // Pop remaining operators.
+    while (stack.length > 0)
+    {
+        output.push(stack.pop());
+    }
 
-    // Return results.
-    return stack;
+    return output.reverse();
 }
 
-infixToPrefix(arr);
+/**
+ * Converts the string into an array after removing all spaces.
+ * @param {String} aString 
+ */
+function stringToArray(aString)
+{
+    return aString.split(" ").join("").split("");
+}
 
+function stringToPostfix(expression)
+{
+    return infixToPostfix(stringToArray(expression)).join(" ");
+}
+
+function stringToPrefix(expression)
+{
+    return infixToPrefix(stringToArray(expression)).join(" ");
+}
+
+let expression = "(3 + 4) * (2 + 1)";
+
+console.log(stringToPostfix(expression));
+console.log(stringToPrefix(expression));
