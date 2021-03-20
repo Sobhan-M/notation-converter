@@ -187,20 +187,9 @@ function postfixToInfix(anArr)
     while(anArr.length > 0)
     {
         shiftedValue = anArr.shift();
-        if (! operators.includes(shiftedValue) && shiftedValue != "(")
+        if (! operators.includes(shiftedValue))
         {
             stack.push(shiftedValue);
-        }
-        else if (shiftedValue == "(")
-        {
-            let recursiveArr = new Array();
-            while (anArr[0] != ")")
-            {
-                recursiveArr.push(anArr.shift());
-            }
-            anArr.shift();
-
-            stack.push(`(${postfixToInfix(recursiveArr)})`);
         }
         else
         {
@@ -213,8 +202,40 @@ function postfixToInfix(anArr)
     return stack[0];
 }
 
-let expression = "(a b +) (c e /) +";
+function prefixStringToInfix(expression)
+{
+    return prefixToInfix(stringToArray(expression));
+}
+
+/**
+ * Takes the array (in prefix) and converts it into an equivalent infix notation.
+ * @param {string[]} anArr 
+ */
+ function prefixToInfix(anArr)
+ {
+     let stack = new Array();
+     let shiftedValue;
+ 
+     while(anArr.length > 0)
+     {
+         shiftedValue = anArr.pop();
+         if (! operators.includes(shiftedValue))
+         {
+             stack.push(shiftedValue);
+         }
+         else
+         {
+             let a = stack.pop();
+             let b = stack.pop();
+             stack.push(`(${a} ${shiftedValue} ${b})`);
+         }
+     }
+ 
+     return stack[0];
+ }
+
+let expression = "ab+cd++";
 
 // console.log(stringToPostfix(expression));
-// console.log(stringToPrefix(expression));
+// console.log(stringToPrefix(expression))
 console.log(postfixStringToInfix(expression));
