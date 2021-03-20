@@ -170,7 +170,51 @@ function stringToPrefix(expression)
     return infixToPrefix(stringToArray(expression)).join(" ");
 }
 
-let expression = "(3 + 4) * (2 + 1)";
+function postfixStringToInfix(expression)
+{
+    return postfixToInfix(stringToArray(expression));
+}
 
-console.log(stringToPostfix(expression));
-console.log(stringToPrefix(expression));
+/**
+ * Takes the array (in postfix) and converts it into an equivalent infix notation.
+ * @param {string[]} anArr 
+ */
+function postfixToInfix(anArr)
+{
+    let stack = new Array();
+    let shiftedValue;
+
+    while(anArr.length > 0)
+    {
+        shiftedValue = anArr.shift();
+        if (! operators.includes(shiftedValue) && shiftedValue != "(")
+        {
+            stack.push(shiftedValue);
+        }
+        else if (shiftedValue == "(")
+        {
+            let recursiveArr = new Array();
+            while (anArr[0] != ")")
+            {
+                recursiveArr.push(anArr.shift());
+            }
+            anArr.shift();
+
+            stack.push(`(${postfixToInfix(recursiveArr)})`);
+        }
+        else
+        {
+            let a = stack.pop();
+            let b = stack.pop();
+            stack.push(`(${b} ${shiftedValue} ${a})`);
+        }
+    }
+
+    return stack[0];
+}
+
+let expression = "(a b +) (c e /) +";
+
+// console.log(stringToPostfix(expression));
+// console.log(stringToPrefix(expression));
+console.log(postfixStringToInfix(expression));
