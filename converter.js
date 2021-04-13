@@ -1,14 +1,62 @@
+//===========================================
+// Helper functions/variables.
+//===========================================
 
 // Order is according to PEDMAS.
 const operators = ["^","/","*","+","-"];
 const parentheses = ["(", ")"];
 
+/** Helper function to check stack top. Improves readability.
+ * @param {string[]} stack 
+ * @returns {boolean} True if the top of the stack is "(". False otherwise.
+ */
+ function isTopLeftParenthesis(stack)
+ {
+	 return stack[stack.length - 1] == "(";
+ }
+ 
+ /** Helper function to check stack top. Improves readability.
+  * @param {string[]} stack 
+  * @returns {boolean} True if the top of the stack is ")". False otherwise.
+  */
+  function isTopRightParenthesis(stack)
+  {
+	  return stack[stack.length - 1] == ")";
+  }
+ 
+ /** Helper function that checks for priority and improves readability.
+  * @param {string} value 
+  * @param {string[]} stack 
+  * @returns {boolean} True if the operator in value has precedence over the top value in stack.
+  */
+ function hasPriority(value, stack)
+ {
+	 let valuePriority = operators.indexOf(value);
+	 let topPriority = operators.indexOf(stack[stack.length-1]);
+	 return valuePriority < topPriority
+ }
+
+ /**
+ * Converts the string into an array after removing all spaces.
+ * @param {string} aString 
+ * @param {string[]}
+ */
+function stringToArray(aString)
+{
+    return aString.split(" ").join("").split("");
+}
+
+//===========================================
+// Underlying logic.
+//===========================================
+
 /**
  * Infix to postfix converter implemented using Dijkstra's
  * shunting-yard algorithm.
- * @param {Array<string>} anArr The infix input
+ * @param {string[]} anArr The infix input
+ * @returns {string} The equivalent postfix expression.
  */
-function infixToPostfix(anArr)
+function infixArrayToPostfix(anArr)
 {
     let stack = new Array();
     let output = new Array();
@@ -63,37 +111,12 @@ function infixToPostfix(anArr)
     return output;
 }
 
-/** Helper function to check stack top. Improves readability.
- * @param {string[]} stack 
- * @returns {boolean} True if the top of the stack is "(". False otherwise.
+/**
+ * Converts an array of chars of an infix expression to the equivalent prefix expression.
+ * @param {string[]} anArr An array of characters that make up the mathematical expression.
+ * @returns {string} A string in prefix notation.
  */
-function isTopLeftParenthesis(stack)
-{
-    return stack[stack.length - 1] == "(";
-}
-
-/** Helper function to check stack top. Improves readability.
- * @param {string[]} stack 
- * @returns {boolean} True if the top of the stack is ")". False otherwise.
- */
- function isTopRightParenthesis(stack)
- {
-     return stack[stack.length - 1] == ")";
- }
-
-/** Helper function that checks for priority and improves readability.
- * @param {string} value 
- * @param {string[]} stack 
- * @returns {boolean} True if the operator in value has precedence over the top value in stack.
- */
-function hasPriority(value, stack)
-{
-    let valuePriority = operators.indexOf(value);
-    let topPriority = operators.indexOf(stack[stack.length-1]);
-    return valuePriority < topPriority
-}
-
-function infixToPrefix(anArr)
+function infixArrayToPrefix(anArr)
 {
     let stack = new Array();
     let output = new Array();
@@ -152,66 +175,38 @@ function infixToPrefix(anArr)
 }
 
 /**
- * Converts the string into an array after removing all spaces.
- * @param {String} aString 
- */
-function stringToArray(aString)
-{
-    return aString.split(" ").join("").split("");
-}
-
-function stringToPostfix(expression)
-{
-    return infixToPostfix(stringToArray(expression)).join(" ");
-}
-
-function stringToPrefix(expression)
-{
-    return infixToPrefix(stringToArray(expression)).join(" ");
-}
-
-function postfixStringToInfix(expression)
-{
-    return postfixToInfix(stringToArray(expression));
-}
-
-/**
  * Takes the array (in postfix) and converts it into an equivalent infix notation.
  * @param {string[]} anArr 
+ * @returns {string} The infix equivalent.
  */
-function postfixToInfix(anArr)
-{
-    let stack = new Array();
-    let shiftedValue;
-
-    while(anArr.length > 0)
-    {
-        shiftedValue = anArr.shift();
-        if (! operators.includes(shiftedValue))
-        {
-            stack.push(shiftedValue);
-        }
-        else
-        {
-            let a = stack.pop();
-            let b = stack.pop();
-            stack.push(`(${b} ${shiftedValue} ${a})`);
-        }
-    }
-
-    return stack[0];
-}
-
-function prefixStringToInfix(expression)
-{
-    return prefixToInfix(stringToArray(expression));
-}
+ function postfixArrayToInfix(anArr)
+ {
+	 let stack = new Array();
+	 let shiftedValue;
+ 
+	 while(anArr.length > 0)
+	 {
+		 shiftedValue = anArr.shift();
+		 if (! operators.includes(shiftedValue))
+		 {
+			 stack.push(shiftedValue);
+		 }
+		 else
+		 {
+			 let a = stack.pop();
+			 let b = stack.pop();
+			 stack.push(`(${b} ${shiftedValue} ${a})`);
+		 }
+	 }
+ 
+	 return stack[0];
+ }
 
 /**
  * Takes the array (in prefix) and converts it into an equivalent infix notation.
  * @param {string[]} anArr 
  */
- function prefixToInfix(anArr)
+ function prefixArrayToInfix(anArr)
  {
      let stack = new Array();
      let shiftedValue;
@@ -234,8 +229,43 @@ function prefixStringToInfix(expression)
      return stack[0];
  }
 
-let expression = "ab+cd++";
+//===========================================
+// Interface.
+//===========================================
 
-// console.log(stringToPostfix(expression));
-// console.log(stringToPrefix(expression))
-console.log(postfixStringToInfix(expression));
+/**
+ * @param {string} expression The infix expression.
+ * @returns {string} The expression as an equivalent posfix expression.
+ */
+function infixStringToPostfix(expression)
+{
+    return infixArrayToPostfix(stringToArray(expression)).join(" ");
+}
+
+/**
+ * @param {string} expression The infix expression.
+ * @returns {string} The expression as an equivalent prefix expression.
+ */
+function infixStringToPrefix(expression)
+{
+    return infixArrayToPrefix(stringToArray(expression)).join(" ");
+}
+
+/**
+ * @param {string} expression The postfix expression.
+ * @returns {string} The expression as an equivalent prefix expression.
+ */
+function postfixStringToInfix(expression)
+{
+    return postfixArrayToInfix(stringToArray(expression));
+}
+
+/**
+ * @param {string} expression The prefix expression.
+ * @returns {string} The expression as an equivalent infix expression.
+ */
+function prefixStringToInfix(expression)
+{
+    return prefixArrayToInfix(stringToArray(expression));
+}
+
